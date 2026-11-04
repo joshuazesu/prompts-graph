@@ -67,13 +67,31 @@ The mod stores daily totals and prompt IDs, never prompt text. Its record lives 
 - the names of the store files already carried over from earlier names, so none is carried over twice.
 - in VS Code, your palette choice, when Claude Code doesn't let the mod save it to the `palette` setting.
 
-The mod sends nothing anywhere: it makes no network requests. Everything it does is on your computer:
+The mod sends nothing anywhere. It makes no network requests and no HTTP calls, and all it reads and writes stays on your computer.
 
-- **Reads** the session transcripts (`*.jsonl`) in your transcripts folder, to count prompts. It keeps no prompt text.
-- **Runs** `hooks/user-lines.sh`, a short shell script it ships, with `/bin/sh`, for transcripts over 4 MiB or when reading only what's new in a file. The script reads the byte range asked for, prints only the lines that could be prompts, and does nothing else.
-- **Reads** Claude Code's `theme` setting, to draw the terminal graph in light or dark colors, and the `HOME` and `CLAUDE_CONFIG_DIR` environment variables, to find your Claude Code folder.
-- **Writes** the `palette` setting when you press the palette button, as `/config` would.
-- **Reads** once the records that its earlier names, `claude-contributions` and `contributions-graph`, left in the plugin store, if there are any, to carry their history over.
+## What it runs, reads and changes
+
+**Programs.** The mod runs one program: `/bin/sh` with `hooks/user-lines.sh`, a short shell script it ships, as `/bin/sh <plugin folder>/hooks/user-lines.sh <transcript file> <first byte> <byte count>`. Claude Code's file reader refuses files over 4 MiB and can't read part of a file, so the script reads a transcript that is over 4 MiB, or only the part of a transcript added since the last scan. It uses `tail`, `head`, `awk` and `sed` to print just the lines that could be prompts, and then how many bytes it read. It writes nothing and runs nothing else.
+
+**Files it reads.**
+
+- the session transcripts (`*.jsonl`) in your transcripts folder, to count prompts. It keeps no prompt text.
+- once, the records its earlier names, `claude-contributions` and `contributions-graph`, left in Claude Code's plugin store, if there are any, to carry their history over.
+
+**Settings and environment.**
+
+- It reads Claude Code's `theme` setting, to draw the terminal graph in light or dark colors.
+- It reads the `HOME` and `CLAUDE_CONFIG_DIR` environment variables, to find your Claude Code folder. It sets no environment variables.
+- It changes one setting, its own `palette` (under `pluginConfigs` in `~/.claude/settings.json`), and only when you press the palette button, as choosing a palette in `/config` would. It changes no other setting, and never Claude Code's permissions.
+
+**Hooks.** The mod's code hooks these Claude Code events:
+
+- **Session start:** registers `/prompts-graph`, counts prompts in transcripts it hasn't read yet, and opens the pane when `autoOpen` is on.
+- **Session end:** after `/clear`, opens the pane again when `autoOpen` is on.
+- **Each stored message:** when the message is a prompt, adds it to today's count. It passes every message on unchanged.
+- **`/prompts-graph`:** opens the pane.
+- **Drawing the pane:** draws the graph, the totals, the legend and the palette button.
+- **A change to the `palette` setting:** redraws the pane in the new palette and passes the change on unchanged.
 
 Claude Code deletes transcripts after 30 days by default, but the record keeps the daily totals for the whole 365-day window. If you reinstall, or clear the record, the graph refills only the 30 days that still have transcripts.
 

@@ -342,16 +342,16 @@ export const register: Register = (on, options) => {
   palette = paletteOf(paletteName)
 
   // A palette chosen while the pane is open redraws it in the new colors
-  // straight away, without waiting for the reload the change brings.
-  on('config.set', { key: 'prompts-graph.palette' }, async ($, e, next) => {
-    const set = await next(e)
-    if (set.deny === undefined) {
-      settingPalette = paletteNameOf(set.value)
-      await $.store.delete(PALETTE_KEY)
-      showPalette($, set.value)
-    }
+  // straight away, without waiting for the reload the change brings. The hook
+  // only watches: it hands the change on unchanged, as the plugin directory
+  // requires of a config.set hook. A change another plugin then refuses shows
+  // until that reload, which draws the setting as it stands.
+  on('config.set', { key: 'prompts-graph.palette' }, ($, e, next) => {
+    settingPalette = paletteNameOf(e.value)
+    showPalette($, e.value)
+    void $.store.delete(PALETTE_KEY).catch(logFailure($, 'palette choice'))
 
-    return set
+    return next(e)
   })
 
   on('session.start', async ($, e, next) => {
@@ -460,24 +460,24 @@ export const register: Register = (on, options) => {
       const { raster, top, side } = terminalOf(graph, palette, theme, e.props.bodyColumns, layout)
       // The side labels' column, when the pane has room for it.
       const gutter = (...children: RenderChildren[]) =>
-        side === undefined ? [] : [<Box width={SIDE_COLUMNS}>{...children}</Box>]
+        side === undefined ? [] : [<Box width={SIDE_COLUMNS}>{children}</Box>]
       const legend = palette[theme].flatMap(color => [' ', <Text color={color}>■</Text>])
 
       return (
         <Box flexDirection="column">
           {headline}
-          {...around(
+          {around(
             [
               <Box flexDirection="row">
-                {...gutter()}
+                {gutter()}
                 <Text>{top}</Text>
               </Box>,
               <Box flexDirection="row">
-                {...gutter(<Text>{side}</Text>)}
+                {gutter(<Text>{side}</Text>)}
                 <Raster key="grid" {...raster} />
               </Box>,
             ],
-            <Text>Less{...legend} More</Text>,
+            <Text>Less{legend} More</Text>,
           )}
         </Box>
       )
@@ -500,7 +500,7 @@ export const register: Register = (on, options) => {
     return (
       <Box flexDirection="column">
         {headline}
-        {...around(
+        {around(
           [<Svg {...sized} alt={`Prompts graph: ${total}. ${streaks}.`} isInteractive />],
           <Svg {...legendSvgOf(palette)} alt="Less to More, in five shades" />,
           e.surface === 'vscode'
