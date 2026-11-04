@@ -1,7 +1,7 @@
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register, RenderChildren, Timer } from 'claude-code'
 
-import type { ContributionRecord } from '../types'
+import type { ContributionRecord } from '../types/index.js'
 
 import {
   graphOf,
@@ -18,7 +18,7 @@ import {
   terminalOf,
   totalLine,
   type Theme,
-} from './graph'
+} from './graph.js'
 import {
   isNewerRecord,
   isObject,
@@ -29,8 +29,8 @@ import {
   withinWindows,
   withScan,
   type Scan,
-} from './record'
-import { contributionsIn, countsAppend, type Contribution } from './rule'
+} from './record.js'
+import { contributionsIn, countsAppend, type Contribution } from './rule.js'
 
 const PANE = 'prompts-graph'
 const TITLE = 'Prompt Tracker'

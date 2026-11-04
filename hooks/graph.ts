@@ -1,15 +1,13 @@
 import type { RenderSurface } from 'claude-code'
 
-import type { Totals } from '../types'
+import type { Totals } from '../types/index.js'
 
-import { countOn, dayKey, WINDOW_DAYS } from './record'
+import { countOn, dayKey, WINDOW_DAYS } from './record.js'
 
-// The hooks environment has the ES2025 base64 methods; es2023's lib lacks them.
-declare global {
-  interface Uint8Array {
-    toBase64(): string
-  }
-}
+// The hooks environment has ES2025's Uint8Array.prototype.toBase64; es2023's
+// lib lacks its type. A cast, not a global declaration, which the plugin
+// directory refuses in a file loaded as code.
+type WithBase64 = Uint8Array & { toBase64(): string }
 
 export type Shade = 0 | 1 | 2 | 3 | 4
 export type Theme = 'light' | 'dark'
@@ -441,7 +439,7 @@ export const terminalOf = (
   )
 
   return {
-    raster: { columns, rows, cells: new Uint8Array(words.buffer).toBase64() },
+    raster: { columns, rows, cells: (new Uint8Array(words.buffer) as WithBase64).toBase64() },
     top: top.join('').trimEnd(),
     side: hasSide ? side.join('\n') : undefined,
   }

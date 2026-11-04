@@ -1,6 +1,6 @@
-import type { ContributionRecord, Totals } from '../types'
+import type { ContributionRecord, Totals } from '../types/index.js'
 
-import type { Contribution } from './rule'
+import type { Contribution } from './rule.js'
 
 export const SOURCE = 'claude-code'
 export const STORE_KEY = 'record'
