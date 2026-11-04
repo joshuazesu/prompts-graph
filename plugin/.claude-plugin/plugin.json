@@ -1,0 +1,31 @@
+{
+  "name": "prompts-graph",
+  "version": "0.1.2",
+  "description": "A GitHub-style graph of the prompts you send Claude Code: one square per day, shaded by how many you sent.",
+  "author": {
+    "name": "Joshua Su"
+  },
+  "license": "MIT",
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "autoOpen": {
+      "type": "boolean",
+      "title": "Open automatically",
+      "description": "Open the graph when a session starts, and again after /clear. Off, it opens only through /prompts-graph.",
+      "default": true
+    },
+    "palette": {
+      "type": "string",
+      "title": "Palette",
+      "description": "The colors the graph is drawn in: clay (Claude Clay) or green (GitHub Green).",
+      "options": ["clay", "green"],
+      "default": "clay"
+    },
+    "transcriptsDir": {
+      "type": "string",
+      "title": "Transcripts folder",
+      "description": "Where Claude Code keeps its session transcripts.",
+      "default": "~/.claude/projects"
+    }
+  }
+}

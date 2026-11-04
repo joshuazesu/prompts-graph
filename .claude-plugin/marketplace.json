@@ -1,0 +1,6 @@
+{
+  "name": "prompts-graph",
+  "owner": { "name": "Joshua Su" },
+  "description": "Prompts Graph: a GitHub-style graph of the prompts you send Claude Code.",
+  "plugins": [{ "name": "prompts-graph", "source": "./plugin" }]
+}
