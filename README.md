@@ -1,4 +1,4 @@
-# Prompts Graph
+# Prompt Tracker
 
 A GitHub-style graph of the prompts you send Claude Code. It shows one square per day for the last 365 days, shaded by how many prompts you sent that day. It opens in a pane beside the chat, in the terminal, VS Code and the desktop app's Code tab.
 
@@ -34,7 +34,7 @@ claude plugin install prompts-graph --marketplace joshuazesu/prompts-graph
 
 In the desktop app, where `/plugin` doesn't run, click **+** next to the prompt box, then **Plugins**. Choose **Add marketplace** with `joshuazesu/prompts-graph`, then **Add plugin**.
 
-To run it from a clone instead, start Claude Code with `claude --plugin-dir <clone>/plugin`. Or, for sessions the desktop app or VS Code start, add the path of the clone's `plugin` folder to `CLAUDE_CODE_PLUGIN_DIRS` in the `env` block of `~/.claude/settings.json`. A clone keeps its record apart from an installed copy, so switching between the two starts a new graph, refilled from the transcripts Claude Code still keeps.
+To run it from a clone instead, start Claude Code with `claude --plugin-dir <clone>`. Or, for sessions the desktop app or VS Code start, add the clone's path to `CLAUDE_CODE_PLUGIN_DIRS` in the `env` block of `~/.claude/settings.json`. A clone keeps its record apart from an installed copy, so switching between the two starts a new graph, refilled from the transcripts Claude Code still keeps.
 
 
 ## Use
@@ -65,8 +65,15 @@ The mod stores daily totals and prompt IDs, never prompt text. Its record lives 
 - the IDs of prompts already counted, for the last 30 days, so no prompt counts twice. Each ID is the last 16 hex digits of the prompt's uuid in its transcript, with the time it was sent, to the second.
 - how far each transcript file has been read, so each scan reads only what's new. Files are listed by their full path, which includes each project's folder name.
 - the names of the store files already carried over from earlier names, so none is carried over twice.
+- in VS Code, your palette choice, when Claude Code doesn't let the mod save it to the `palette` setting.
 
-The mod sends nothing anywhere. It reads transcripts on your computer, and once the records its earlier names left in the same folder, and keeps only what's listed above.
+The mod sends nothing anywhere: it makes no network requests. Everything it does is on your computer:
+
+- **Reads** the session transcripts (`*.jsonl`) in your transcripts folder, to count prompts. It keeps no prompt text.
+- **Runs** `hooks/user-lines.sh`, a short shell script it ships, with `/bin/sh`, for transcripts over 4 MiB or when reading only what's new in a file. The script reads the byte range asked for, prints only the lines that could be prompts, and does nothing else.
+- **Reads** Claude Code's `theme` setting, to draw the terminal graph in light or dark colors, and the `HOME` and `CLAUDE_CONFIG_DIR` environment variables, to find your Claude Code folder.
+- **Writes** the `palette` setting when you press the palette button, as `/config` would.
+- **Reads** once the records that its earlier names, `claude-contributions` and `contributions-graph`, left in the plugin store, if there are any, to carry their history over.
 
 Claude Code deletes transcripts after 30 days by default, but the record keeps the daily totals for the whole 365-day window. If you reinstall, or clear the record, the graph refills only the 30 days that still have transcripts.
 
